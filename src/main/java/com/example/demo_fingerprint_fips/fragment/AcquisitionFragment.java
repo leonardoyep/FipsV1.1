@@ -59,8 +59,8 @@ public class AcquisitionFragment extends KeyDwonFragment  implements  OnClickLis
 	Button btnEnroll;
 	Button EnrollStop;
 	Button btnPtCapture;
-	Button btnGoBackToClient; //dev by yep
 	Button btnPtCaptureStop;
+	Button btnGoBackToClient; //dev by yep
 	TextView tvInfo,  tvVersion;
 	Button btnCleanAll;
 	Button btnGetCount;
@@ -113,7 +113,7 @@ public class AcquisitionFragment extends KeyDwonFragment  implements  OnClickLis
 		mContext.mFingerprint.setIdentificationCallBack(new IdentificationBack());
         mContext.mFingerprint.setPtCaptureCallBack(new CaptureCallBack());
 
-		//trying to hide buttons
+		//hide buttons
 		//Toast.makeText(mContext, "passed here", Toast.LENGTH_LONG).show();
 		btnGetCount.setVisibility(View.GONE);
 		btnCleanAll.setVisibility(View.GONE);
@@ -157,7 +157,6 @@ public class AcquisitionFragment extends KeyDwonFragment  implements  OnClickLis
 				buff=null;
 				id=-1;
 				tvInfo.setText("");
-				Toast.makeText(mContext, "Lets capture the finger", Toast.LENGTH_SHORT).show();
 				mContext.mFingerprint.startIdentification();//采集之前先判断指纹是否存在
 				btnEnroll.setEnabled(false);
 				break;
@@ -179,7 +178,7 @@ public class AcquisitionFragment extends KeyDwonFragment  implements  OnClickLis
                  mContext.mFingerprint.stopPtCapture();
 				break;
 			case R.id.btnGoBackToClient:
-					retornaIntent();
+				retornaIntent();
 				break;
 		}
 	}
@@ -254,12 +253,13 @@ public class AcquisitionFragment extends KeyDwonFragment  implements  OnClickLis
 		public void onComplete(boolean result, byte[] bytes, int id,int failuerCode) {
 			Log.i(TAG, "failuerCode="+failuerCode);
 			if (result) {
-				String strMsg = "Capture - Fingerprint ID:" + id ;
+				String strMsg = "User: " + mContext.login + " - FingerprintID:" + id ;
 				userId = id;
 				retornaIntent(); //go back to client app
+				mContext.finish();
 				setMsg(strMsg);
 				String fileName = "FingerprintID_" + id + ".txt";
-				FileUtils.WritFile(fileName, FileUtils.bytes2HexString2(bytes, bytes.length));
+				FileUtils.WritFile(fileName, FileUtils.bytes2HexString2(bytes, bytes.length)); //save the fingerprint as hexadecimal code
 				mContext.playSound(1);
 			} else {
 				mContext.playSound(2);
@@ -278,9 +278,10 @@ public class AcquisitionFragment extends KeyDwonFragment  implements  OnClickLis
 			public void onComplete(boolean result, int id,int failuerCode) {
 				Log.i(TAG, "failuerCode="+failuerCode);
 				if (result) {
-					setMsg("Already exist - Fingerprint number ID:" + id);
+					setMsg("User: " + mContext.login + " - Fingerprint ID:" + id);
 					userId = id;
 					retornaIntent(); //go back to client app
+					mContext.finish();
 				} else {
 					if(failuerCode==RESULT_STATUS_NO_MATCH){ //指纹不存在
 						mContext.mFingerprint.startEnroll();

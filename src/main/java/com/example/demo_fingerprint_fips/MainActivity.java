@@ -21,7 +21,6 @@ import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.Toast;
 
 import com.example.demo_fingerprint_fips.fragment.AcquisitionFragment;
@@ -33,6 +32,7 @@ import com.rscja.deviceapi.FingerprintWithFIPS;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.Delayed;
 
 /**
  * FIPS指纹模块使用demo
@@ -53,23 +53,16 @@ public class MainActivity extends AppCompatActivity {
     private FragmentTabHost mTabHost;
     private FragmentManager fm;
     public  boolean   isPower=true;
-    public Intent goingBackToClient = new Intent();
 
     public String textClient = "";
 
-    public void GoingBackToClient(){
-        Toast.makeText(MainActivity.this, "Going BACKK", Toast.LENGTH_SHORT).show();
-        goingBackToClient = getPackageManager().getLaunchIntentForPackage("com.example.clientdatasender");
-        goingBackToClient.putExtra(Intent.EXTRA_TEXT,"Sending texdt");
-        startActivity(goingBackToClient);
-    }
+    public String login = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG,"onCreate");
         setContentView(R.layout.activity_main);
-        Toast.makeText(MainActivity.this, "Starting", Toast.LENGTH_LONG).show();
 
         //RECEIVING DATA FROM CLIENT APP
         Intent intent = getIntent();
@@ -90,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             // Handle other intents, such as being started from the home screen
         }
-
         initSound();
         initViewPageData();
         try {
@@ -112,18 +104,29 @@ public class MainActivity extends AppCompatActivity {
         mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
         mTabHost.setup(this, fm, R.id.realtabcontent);
 
-        //mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.fingerprint_tab_identification)).setIndicator(getString(R.string.fingerprint_tab_identification)),
-                        // IdentificationFragment.class, null);
+        if (login.equals("")){
+            mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.fingerprint_tab_acquisition)).setIndicator(getString(R.string.fingerprint_tab_acquisition)),
+                    AcquisitionFragment.class, null);
+        }
+        else
+        {
+            mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.fingerprint_tab_identification)).setIndicator(getString(R.string.fingerprint_tab_identification)),
+                    IdentificationFragment.class, null);
+        }
 
-       //mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.fingerprint_tab_verify)).setIndicator(getString(R.string.fingerprint_tab_verify)),
-                        // TemplateVerify.class, null);
+        /*
+        mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.fingerprint_tab_identification)).setIndicator(getString(R.string.fingerprint_tab_identification)),
+                IdentificationFragment.class, null);
 
-
-        //mTabHost.addTab(mTabHost.newTabSpec("GRAB").setIndicator("GRAB"),
-                       // GRABFragment.class, null);
+       mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.fingerprint_tab_verify)).setIndicator(getString(R.string.fingerprint_tab_verify)),
+              TemplateVerify.class, null);
 
         mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.fingerprint_tab_acquisition)).setIndicator(getString(R.string.fingerprint_tab_acquisition)),
-                         AcquisitionFragment.class, null);
+                AcquisitionFragment.class, null);
+
+        mTabHost.addTab(mTabHost.newTabSpec("GRAB").setIndicator("GRAB"),
+                GRABFragment.class, null);
+                */
 
         boolean result;
         File file=new File(FileUtils.PATH);
@@ -186,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show();
             }else{
                 isPower=true;
-                Toast.makeText(MainActivity.this, "init working", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "init success", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -244,37 +247,29 @@ public class MainActivity extends AppCompatActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-    void handleSendText(Intent intent) {
-        String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
-        if (sharedText != null) {
-            // Update UI to reflect text being shared
-            textClient = sharedText;
+        void handleSendText(Intent intent) {
+            String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
+            if (sharedText != null && !sharedText.equals("")) {
+                // Update UI to reflect text being shared
+                Toast.makeText(this, "The login is: " + sharedText + " !", Toast.LENGTH_LONG).show();
+                textClient = sharedText;
+                login = sharedText;
+            }
         }
-    }
 
-    void handleSendImage(Intent intent) {
-        Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
-        if (imageUri != null) {
-            // Update UI to reflect image being shared
+        void handleSendImage(Intent intent) {
+            Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+            if (imageUri != null) {
+                // Update UI to reflect image being shared
+            }
         }
-    }
 
-    void handleSendMultipleImages(Intent intent) {
-        ArrayList<Uri> imageUris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-        if (imageUris != null) {
-            // Update UI to reflect multiple images being shared
+        void handleSendMultipleImages(Intent intent) {
+            ArrayList<Uri> imageUris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+            if (imageUris != null) {
+                // Update UI to reflect multiple images being shared
+            }
         }
-    }
-
-    public void submitMessage(View view) {
-
-        Toast.makeText(this, "entrou", Toast.LENGTH_SHORT).show();
-        Intent intentRetorna = new Intent();
-        intentRetorna.putExtra("Key", "Teste");
-        setResult(1, intentRetorna);
-
-        finish();
-    }
 
 }
 

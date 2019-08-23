@@ -18,6 +18,7 @@ import com.rscja.deviceapi.FingerprintWithFIPS;
 import com.rscja.utility.StringUtility;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -101,6 +102,14 @@ public class IdentificationFragment extends KeyDwonFragment implements View.OnCl
 		btnIdent.setOnClickListener(this);
 		mContext.mFingerprint.setIdentificationCallBack(new IdentificationCall());
 
+		if(!mContext.isPower){
+			Toast.makeText(mContext,"The fingerprints did not run powered on!",Toast.LENGTH_SHORT).show();
+			return;
+		}
+		btnIdent.setEnabled(false);
+		tvID.setText("");
+		mContext.mFingerprint.startIdentification();
+
 	}
 
 	public void scrollToBottom(final View inner) {
@@ -150,14 +159,26 @@ public class IdentificationFragment extends KeyDwonFragment implements View.OnCl
 		public void onComplete(boolean result, int i,int failuerCode) {
 			Log.i(TAG, "failuerCode="+failuerCode);
 			if(result) {
-				tvID.setText("fingerprintID=" + i);
+				tvID.setText("User: " + mContext.login +" - fingerprintID = " + i);
 
 				mContext.playSound(1);
+
+				retornaIntent(i); //back to client app
 			}else{
 				mContext.playSound(2);
 			}
 			btnIdent.setEnabled(true);
 		}
 
+	}
+
+	private void retornaIntent(int userId){
+		Intent intentRetorna = new Intent();
+
+		intentRetorna.putExtra("Key", Integer.toString(userId));
+
+		mContext.setResult(1, intentRetorna);
+
+		mContext.finish();
 	}
 }
